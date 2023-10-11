@@ -16,7 +16,8 @@ const db = pgp(dbConfig);
 
 // Middleware pour gérer les données JSON
 app.use(express.json());
-
+//Gerer CORS
+app.use(cors());
 // Route pour insérer des données spatiales
 app.post('/inserer-donnees-spatiales', async (req, res) => {
   try {
