@@ -6,7 +6,7 @@ const cors = require('cors');
 
 const dbConfig = {
   host: 'localhost',
-  port: 5432, // Le port doit être défini correctement
+  port: 5432, // Le port doit être défini correctement, au cas où il est dans docker
   database: 'spatial2',
   user: 'postgres',
   password: '123',
@@ -22,7 +22,7 @@ app.post('/postcitizen', async (req, res) => {
     const { LocationAtATime } = req.body;
 
     const insertQuery = `
-      INSERT INTO nom_de_la_table (user_id, latitude, longitude, date, time)
+      INSERT INTO Location_At_Time (user_id, latitude, longitude, date, time)
       VALUES ($1, $2, $3, $4, $5)
     `;
     await db.none(insertQuery, [
@@ -56,7 +56,7 @@ app.put('/updatecitizen/:user_id', async (req, res) => {
     const { LocationAtATime } = req.body;
 
     const updateQuery = `
-      UPDATE nom_de_la_table
+      UPDATE Location_At_Time
       SET latitude = $2, longitude = $3, date = $4, time = $5
       WHERE user_id = $1
     `;
