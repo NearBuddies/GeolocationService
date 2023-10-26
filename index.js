@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(cors());
 
 // Create (Insert) operation
-app.post('/postcitizen', async (req, res) => {
+app.post('/postcitizenlocation', async (req, res) => {
   try {
     const { user_id, latitude, longitude, latitudeDelta, longitudeDelta } = req.body;
 
@@ -37,7 +37,7 @@ app.post('/postcitizen', async (req, res) => {
 });
 
 // Read operation
-app.get('/getcitizen/:user_id', async (req, res) => {
+app.get('/getcitizenlocation/:user_id', async (req, res) => {
   try {
     const { user_id } = req.params;
 
@@ -58,7 +58,7 @@ app.get('/getcitizen/:user_id', async (req, res) => {
 });
 
 // Update operation
-app.put('/updatecitizen/:user_id', async (req, res) => {
+app.put('/updatecitizenlocation/:user_id', async (req, res) => {
   try {
     const { user_id } = req.params;
     const { latitude, longitude, latitudeDelta, longitudeDelta } = req.body;
