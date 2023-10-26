@@ -53,7 +53,7 @@ app.get('/getlatestcitizenlocation/:user_id', async (req, res) => {
     if (data) {
       res.status(200).json(data);
     } else {
-      res.status(404).json({ error: 'Aucune emplacement trouvée pour cet utilisateur aujourd\'hui' });
+      res.status(404).json({ error: 'Aucun emplacement trouvé pour cet utilisateur aujourd\'hui' });
     }
   } catch (error) {
     console.error('Erreur lors de la récupération de la dernière emplacement', error);
