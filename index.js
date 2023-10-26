@@ -17,12 +17,10 @@ const db = pgp(dbConfig);
 app.use(express.json());
 app.use(cors());
 
-// Create (Insert) operation
 app.post('/postcitizenlocation', async (req, res) => {
   try {
     const { user_id, latitude, longitude, latitudeDelta, longitudeDelta } = req.body;
 
-    // Create a point using ST_MakePoint
     const insertQuery = `
       INSERT INTO LocationAtTime (user_id, location)
       VALUES ($1, ST_MakePoint($2, $3))
@@ -36,12 +34,10 @@ app.post('/postcitizenlocation', async (req, res) => {
   }
 });
 
-// Read operation
 app.get('/getcitizenlocation/:user_id', async (req, res) => {
   try {
     const { user_id } = req.params;
 
-    // Select spatial data for a specific user
     const selectQuery = `
       SELECT user_id, ST_X(location) as longitude, ST_Y(location) as latitude
       FROM LocationAtTime
@@ -57,13 +53,11 @@ app.get('/getcitizenlocation/:user_id', async (req, res) => {
   }
 });
 
-// Update operation
 app.put('/updatecitizenlocation/:user_id', async (req, res) => {
   try {
     const { user_id } = req.params;
     const { latitude, longitude, latitudeDelta, longitudeDelta } = req.body;
 
-    // Update the location using ST_MakePoint
     const updateQuery = `
       UPDATE LocationAtTime
       SET location = ST_MakePoint($2, $3)
@@ -78,12 +72,10 @@ app.put('/updatecitizenlocation/:user_id', async (req, res) => {
   }
 });
 
-// Delete operation
 app.delete('/deletecitizenlocation/:user_id', async (req, res) => {
   try {
     const { user_id } = req.params;
 
-    // Delete spatial data for a specific user
     const deleteQuery = `
       DELETE FROM LocationAtTime
       WHERE user_id = $1
