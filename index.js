@@ -35,23 +35,59 @@ app.post('/postcitizenlocation', async (req, res) => {
   }
 });
 
-app.get('/getcitizenlocation/:user_id', async (req, res) => {
+app.get('/getlatestcitizenlocation/:user_id', async (req, res) => {
   try {
     const { user_id } = req.params;
 
+    // Sélectionner la dernière emplacement du jour pour un utilisateur spécifique
     const selectQuery = `
-      SELECT user_id, location, latitudeDelta, longitudeDelta
+      SELECT user_id, location, latitudeDelta, longitudeDelta, date, time
       FROM LocationAtTime
       WHERE user_id = $1
+      AND date = current_date
+      ORDER BY date DESC, time DESC
+      LIMIT 1
     `;
-    const data = await db.one(selectQuery, [user_id]);
+    const data = await db.oneOrNone(selectQuery, [user_id]);
 
-    res.status(200).json(data);
+    if (data) {
+      res.status(200).json(data);
+    } else {
+      res.status(404).json({ error: 'Aucune emplacement trouvée pour cet utilisateur aujourd\'hui' });
+    }
   } catch (error) {
-    console.error('Erreur lors de la récupération des données', error);
-    res.status(500).json({ error: 'Erreur lors de la récupération des données' });
+    console.error('Erreur lors de la récupération de la dernière emplacement', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération de la dernière emplacement' });
   }
 });
+
+app.get('/getallcitizenlocations/:user_id/:date', async (req, res) => {
+  try {
+    const { user_id, date } = req.params;
+
+    // Convertir la date au format "jourmoisannee" en date PostgreSQL
+    const formattedDate = `${date.substring(4, 8)}-${date.substring(2, 4)}-${date.substring(0, 2)}`;
+
+    // Sélectionner toutes les emplacements pour un utilisateur spécifique à la date donnée
+    const selectQuery = `
+      SELECT user_id, location, latitudeDelta, longitudeDelta, date, time
+      FROM LocationAtTime
+      WHERE user_id = $1
+      AND date = $2
+    `;
+    const data = await db.manyOrNone(selectQuery, [user_id, formattedDate]);
+
+    if (data.length > 0) {
+      res.status(200).json(data);
+    } else {
+      res.status(404).json({ error: 'Aucune emplacement trouvée pour cet utilisateur à la date spécifiée' });
+    }
+  } catch (error) {
+    console.error('Erreur lors de la récupération des emplacements à la date spécifiée', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des emplacements à la date spécifiée' });
+  }
+});
+
 
 app.put('/updatecitizenlocation/:user_id', async (req, res) => {
   try {
