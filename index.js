@@ -39,6 +39,16 @@ app.post('/postcitizen', async (req, res) => {
     res.status(500).json({ error: 'Erreur lors de l\'insertion de la personne' });
   }
 });
+app.put(`/updatecitizen/${datas}`, async (req, res) => {
+  try {
+    res.status(200).json({ 
+      message:'Données mises à jour avec succès'
+    });
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour de la personne', error);
+    res.status(500).json({ error: 'Erreur lors de l\'insertion de la personne' });
+  }
+});
 
 app.put('/updatecitizen/:user_id', async (req, res) => {
   try {
