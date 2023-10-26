@@ -1,0 +1,34 @@
+--Creation de la table
+--
+CREATE TABLE LocationAtTime (
+    locationidentifier serial PRIMARY KEY,
+    user_id int,
+    location GEOMETRY(Point, 4326),
+    latitudeDelta double precision,
+    longitudeDelta double precision,
+    date timestamp DEFAULT current_date,
+    time time DEFAULT current_time
+);
+
+--Creation d'un index sur "user_id" car il sert pour la recherche
+--
+CREATE INDEX idx_user_id ON LocationAtTime(user_id);
+
+
+--Creation d'une fonction afin de remplir l'identidiant de la location
+--
+CREATE OR REPLACE FUNCTION fill_locationidentifier() RETURNS TRIGGER AS $$
+BEGIN
+  -- Générer une nouvelle valeur pour locationidentifier
+  NEW.locationidentifier := nextval('locationattime_locationidentifier_seq');
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+--Creation d'un trigger qui utilise cette fonction pour remplir l'identifiant de la location
+--à chaque insertion
+--
+CREATE TRIGGER fill_locationidentifier_trigger
+BEFORE INSERT ON LocationAtTime
+FOR EACH ROW
+EXECUTE FUNCTION fill_locationidentifier();

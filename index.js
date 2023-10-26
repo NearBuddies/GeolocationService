@@ -22,12 +22,13 @@ app.post('/postcitizenlocation', async (req, res) => {
     const { user_id, latitude, longitude, latitudeDelta, longitudeDelta } = req.body;
 
     const insertQuery = `
-      INSERT INTO LocationAtTime (user_id, location)
-      VALUES ($1, ST_MakePoint($2, $3))
+      INSERT INTO LocationAtTime (user_id, location, latitudeDelta, longitudeDelta)
+      VALUES ($1, ST_MakePoint($2, $3), $4, $5)
+      RETURNING locationidentifier;
     `;
-    await db.none(insertQuery, [user_id, latitude, longitude]);
+    const result = await db.one(insertQuery, [user_id, latitude, longitude, latitudeDelta, longitudeDelta]);
 
-    res.status(200).json({ message: 'Données insérées avec succès' });
+    res.status(200).json({ message: 'Données insérées avec succès', locationidentifier: result.locationidentifier });
   } catch (error) {
     console.error('Erreur lors de l\'insertion de la personne', error);
     res.status(500).json({ error: 'Erreur lors de l\'insertion de la personne' });
@@ -39,14 +40,13 @@ app.get('/getcitizenlocation/:user_id', async (req, res) => {
     const { user_id } = req.params;
 
     const selectQuery = `
-      SELECT user_id, ST_X(location) as longitude, ST_Y(location) as latitude
+      SELECT user_id, location, latitudeDelta, longitudeDelta
       FROM LocationAtTime
       WHERE user_id = $1
     `;
     const data = await db.one(selectQuery, [user_id]);
 
     res.status(200).json(data);
-    console.log(data);
   } catch (error) {
     console.error('Erreur lors de la récupération des données', error);
     res.status(500).json({ error: 'Erreur lors de la récupération des données' });
@@ -60,10 +60,10 @@ app.put('/updatecitizenlocation/:user_id', async (req, res) => {
 
     const updateQuery = `
       UPDATE LocationAtTime
-      SET location = ST_MakePoint($2, $3)
+      SET location = ST_MakePoint($2, $3), latitudeDelta = $4, longitudeDelta = $5
       WHERE user_id = $1
     `;
-    await db.none(updateQuery, [user_id, latitude, longitude]);
+    await db.none(updateQuery, [user_id, latitude, longitude, latitudeDelta, longitudeDelta]);
 
     res.status(200).json({ message: 'Données mises à jour avec succès' });
   } catch (error) {
