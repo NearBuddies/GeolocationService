@@ -35,13 +35,13 @@ app.post('/postcitizenlocation', async (req, res) => {
   }
 });
 
+// Route pour obtenir la dernière emplacement du jour pour un utilisateur spécifique
 app.get('/getlatestcitizenlocation/:user_id', async (req, res) => {
   try {
     const { user_id } = req.params;
 
-    // Sélectionner la dernière emplacement du jour pour un utilisateur spécifique
     const selectQuery = `
-      SELECT user_id, location, latitudeDelta, longitudeDelta, date, time
+      SELECT user_id, ST_X(location) as latitude, ST_Y(location) as longitude, latitudeDelta, longitudeDelta, date, time
       FROM LocationAtTime
       WHERE user_id = $1
       AND date = current_date
@@ -53,7 +53,7 @@ app.get('/getlatestcitizenlocation/:user_id', async (req, res) => {
     if (data) {
       res.status(200).json(data);
     } else {
-      res.status(404).json({ error: 'Aucun emplacement trouvé pour cet utilisateur aujourd\'hui' });
+      res.status(404).json({ error: 'Aucune emplacement trouvée pour cet utilisateur aujourd\'hui' });
     }
   } catch (error) {
     console.error('Erreur lors de la récupération de la dernière emplacement', error);
@@ -61,6 +61,7 @@ app.get('/getlatestcitizenlocation/:user_id', async (req, res) => {
   }
 });
 
+// Route pour obtenir toutes les emplacements d'un utilisateur à une date spécifique
 app.get('/getallcitizenlocations/:user_id/:date', async (req, res) => {
   try {
     const { user_id, date } = req.params;
@@ -68,9 +69,8 @@ app.get('/getallcitizenlocations/:user_id/:date', async (req, res) => {
     // Convertir la date au format "jourmoisannee" en date PostgreSQL
     const formattedDate = `${date.substring(4, 8)}-${date.substring(2, 4)}-${date.substring(0, 2)}`;
 
-    // Sélectionner toutes les emplacements pour un utilisateur spécifique à la date donnée
     const selectQuery = `
-      SELECT user_id, location, latitudeDelta, longitudeDelta, date, time
+      SELECT user_id, ST_X(location) as latitude, ST_Y(location) as longitude, latitudeDelta, longitudeDelta, date, time
       FROM LocationAtTime
       WHERE user_id = $1
       AND date = $2
@@ -80,7 +80,7 @@ app.get('/getallcitizenlocations/:user_id/:date', async (req, res) => {
     if (data.length > 0) {
       res.status(200).json(data);
     } else {
-      res.status(404).json({ error: 'Aucune emplacement trouvée pour cet utilisateur à la date spécifiée' });
+      res.status(404).json({ error: 'Aucune emplacement trouvé pour cet utilisateur à la date spécifiée' });
     }
   } catch (error) {
     console.error('Erreur lors de la récupération des emplacements à la date spécifiée', error);
@@ -88,7 +88,9 @@ app.get('/getallcitizenlocations/:user_id/:date', async (req, res) => {
   }
 });
 
-
+//Cette fonction n'est pas sensée intervenir, on ne met pas à jour une location, on rajoute
+//Cette fonction met pas à jour toutes les locations de la journée en une seule location
+//Je la laisse avant de mieux réfléchir, mais je la suuprimerais probablement plus tard 
 app.put('/updatecitizenlocation/:user_id', async (req, res) => {
   try {
     const { user_id } = req.params;
@@ -108,6 +110,8 @@ app.put('/updatecitizenlocation/:user_id', async (req, res) => {
   }
 });
 
+//Supprime toute les locations de quelqu'un, un trigger peut se déclencher 
+//chaque deux jours sur les locations vieilles de trois jours et les supprimer
 app.delete('/deletecitizenlocation/:user_id', async (req, res) => {
   try {
     const { user_id } = req.params;
