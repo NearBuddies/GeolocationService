@@ -1,17 +1,17 @@
-import express from 'express';
+const express = require('express');
 const app = express();
 const port = 4000;
-import cors from 'cors';
-import { createServer } from 'http';
-import socketIo from 'socket.io';
+const cors = require('cors');
+const http = require('http');
+const socketIo = require('socket.io');
 
 app.use(cors());
 
-const server = createServer(app);
+const server = http.createServer(app);
 const io = socketIo(server);
 
 
-import { getLatestCitizenLocation, getAllCitizenLocations, createCitizenLocation, updateCitizenLocation, deleteCitizenLocation } from './CrudService'; 
+const crudServiceClient = require('./CrudService'); 
 
 io.on('connection', (socket) => {
   console.log('Un client s\'est connecté au serveur WebSocket');
@@ -24,7 +24,7 @@ io.on('connection', (socket) => {
     if (data.operation === 'getLatestCitizenLocation') {
       try {
         const { user_id } = data;
-        const latestLocation = await getLatestCitizenLocation(user_id);
+        const latestLocation = await crudServiceClient.getLatestCitizenLocation(user_id);
 
         if (latestLocation) {
           socket.emit('response', { success: true, data: latestLocation });
@@ -37,7 +37,7 @@ io.on('connection', (socket) => {
     } else if (data.operation === 'getAllCitizenLocations') {
       try {
         const { user_id, date } = data;
-        const allLocations = await getAllCitizenLocations(user_id, date);
+        const allLocations = await crudServiceClient.getAllCitizenLocations(user_id, date);
 
         if (allLocations.length > 0) {
           socket.emit('response', { success: true, data: allLocations });
@@ -50,7 +50,7 @@ io.on('connection', (socket) => {
     } else if (data.operation === 'createCitizenLocation') {
       try {
         const { user_id, latitude, longitude, latitudeDelta, longitudeDelta } = data;
-        const result = await createCitizenLocation(user_id, latitude, longitude, latitudeDelta, longitudeDelta);
+        const result = await crudServiceClient.createCitizenLocation(user_id, latitude, longitude, latitudeDelta, longitudeDelta);
         socket.emit('response', { success: true, data: { message: 'Emplacement insérée avec succès', locationidentifier: result.locationidentifier } });
       } catch (error) {
         socket.emit('response', { success: false, error: 'Erreur lors de l\'insertion de l\'emplacement' });
@@ -58,7 +58,7 @@ io.on('connection', (socket) => {
     } else if (data.operation === 'updateCitizenLocation') {
       try {
         const { user_id, latitude, longitude, latitudeDelta, longitudeDelta } = data;
-        await updateCitizenLocation(user_id, latitude, longitude, latitudeDelta, longitudeDelta);
+        await crudServiceClient.updateCitizenLocation(user_id, latitude, longitude, latitudeDelta, longitudeDelta);
         socket.emit('response', { success: true, data: { message: 'Emplacement mis à jour avec succès' } });
       } catch (error) {
         socket.emit('response', { success: false, error: 'Erreur lors de la mise à jour de l\'emplacement' });
@@ -66,7 +66,7 @@ io.on('connection', (socket) => {
     } else if (data.operation === 'deleteCitizenLocation') {
       try {
         const { user_id } = data;
-        await deleteCitizenLocation(user_id);
+        await crudServiceClient.deleteCitizenLocation(user_id);
         socket.emit('response', { success: true, data: { message: 'Emplacement supprimée avec succès' } });
       } catch (error) {
         socket.emit('response', { success: false, error: 'Erreur lors de la suppression de l\'emplacement' });
