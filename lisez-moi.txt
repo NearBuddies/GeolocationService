@@ -1,0 +1,7 @@
+Pour demarrer les deux services : npm run up
+Sinon allez voir dans package.json
+Le service Business utilise les socket
+Lisez le script PostGIS pour mettre en oeuvre la solution
+En cas de problèmes de dépendances, supprimez node_modules et faites : "npm install"
+/*****************************************Mamane Hassane*********************************************/
+/*****************************************30 Octobre 2023 à 20:48************************************/
