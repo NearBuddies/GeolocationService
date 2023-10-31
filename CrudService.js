@@ -90,7 +90,7 @@ app.get('/getallcitizenlocations/:user_id/:date', async (req, res) => {
 
 //Cette fonction n'est pas sensée intervenir, on ne met pas à jour une location, on rajoute
 //Cette fonction met pas à jour toutes les locations de la journée en une seule location
-//Je la laisse avant de mieux réfléchir, mais je la suuprimerais probablement plus tard 
+//Je la laisse avant de mieux réfléchir, mais je la suprimerais probablement plus tard 
 app.put('/updatecitizenlocation/:user_id', async (req, res) => {
   try {
     const { user_id } = req.params;
