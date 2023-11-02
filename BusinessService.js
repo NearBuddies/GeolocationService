@@ -2,79 +2,97 @@ const express = require('express');
 const app = express();
 const port = 4000;
 const cors = require('cors');
-const http = require('http');
-const socketIo = require('socket.io');
 
+// Configuration CORS
 app.use(cors());
 
-const server = http.createServer(app);
-const io = socketIo(server);
+// Import des clients des microservices CRUD
+const crudServiceClient = require('./crudServiceClient'); // Remplacez par l'emplacement de votre client CRUD
 
+// Route pour obtenir la dernière emplacement du jour pour un utilisateur spécifique
+app.get('/getLatestCitizenLocation/:user_id', async (req, res) => {
+  try {
+    const { user_id } = req.params;
 
-const crudServiceClient = require('./CrudService'); 
+    // Utilisation du client du microservice CRUD pour obtenir la dernière emplacement
+    const latestLocation = await crudServiceClient.getLatestCitizenLocation(user_id);
 
-io.on('connection', (socket) => {
-  console.log('Un client s\'est connecté au serveur WebSocket');
-
-  socket.on('disconnect', () => {
-    console.log('Un client s\'est déconnecté du serveur WebSocket');
-  });
-
-  socket.on('request', async (data) => {
-    if (data.operation === 'getLatestCitizenLocation') {
-      try {
-        const { user_id } = data;
-        const latestLocation = await crudServiceClient.getLatestCitizenLocation(user_id);
-
-        if (latestLocation) {
-          socket.emit('response', { success: true, data: latestLocation });
-        } else {
-          socket.emit('response', { success: false, error: 'Aucune emplacement trouvée pour cet utilisateur aujourd\'hui' });
-        }
-      } catch (error) {
-        socket.emit('response', { success: false, error: 'Erreur lors de la récupération de la dernière emplacement' });
-      }
-    } else if (data.operation === 'getAllCitizenLocations') {
-      try {
-        const { user_id, date } = data;
-        const allLocations = await crudServiceClient.getAllCitizenLocations(user_id, date);
-
-        if (allLocations.length > 0) {
-          socket.emit('response', { success: true, data: allLocations });
-        } else {
-          socket.emit('response', { success: false, error: 'Aucune emplacement trouvé pour cet utilisateur à la date spécifiée' });
-        }
-      } catch (error) {
-        socket.emit('response', { success: false, error: 'Erreur lors de la récupération des emplacements à la date spécifiée' });
-      }
-    } else if (data.operation === 'createCitizenLocation') {
-      try {
-        const { user_id, latitude, longitude, latitudeDelta, longitudeDelta } = data;
-        const result = await crudServiceClient.createCitizenLocation(user_id, latitude, longitude, latitudeDelta, longitudeDelta);
-        socket.emit('response', { success: true, data: { message: 'Emplacement insérée avec succès', locationidentifier: result.locationidentifier } });
-      } catch (error) {
-        socket.emit('response', { success: false, error: 'Erreur lors de l\'insertion de l\'emplacement' });
-      }
-    } else if (data.operation === 'updateCitizenLocation') {
-      try {
-        const { user_id, latitude, longitude, latitudeDelta, longitudeDelta } = data;
-        await crudServiceClient.updateCitizenLocation(user_id, latitude, longitude, latitudeDelta, longitudeDelta);
-        socket.emit('response', { success: true, data: { message: 'Emplacement mis à jour avec succès' } });
-      } catch (error) {
-        socket.emit('response', { success: false, error: 'Erreur lors de la mise à jour de l\'emplacement' });
-      }
-    } else if (data.operation === 'deleteCitizenLocation') {
-      try {
-        const { user_id } = data;
-        await crudServiceClient.deleteCitizenLocation(user_id);
-        socket.emit('response', { success: true, data: { message: 'Emplacement supprimée avec succès' } });
-      } catch (error) {
-        socket.emit('response', { success: false, error: 'Erreur lors de la suppression de l\'emplacement' });
-      }
+    if (latestLocation) {
+      res.status(200).json(latestLocation);
+    } else {
+      res.status(404).json({ error: 'Aucune emplacement trouvée pour cet utilisateur aujourd\'hui' });
     }
-  });
+  } catch (error) {
+    console.error('Erreur lors de la récupération de la dernière emplacement', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération de la dernière emplacement' });
+  }
 });
 
-server.listen(port, () => {
+// Route pour obtenir toutes les emplacements d'un utilisateur à une date spécifique
+app.get('/getAllCitizenLocations/:user_id/:date', async (req, res) => {
+  try {
+    const { user_id, date } = req.params;
+
+    // Utilisation du client du microservice CRUD pour obtenir toutes les emplacements
+    const allLocations = await crudServiceClient.getAllCitizenLocations(user_id, date);
+
+    if (allLocations.length > 0) {
+      res.status(200).json(allLocations);
+    } else {
+      res.status(404).json({ error: 'Aucune emplacement trouvé pour cet utilisateur à la date spécifiée' });
+    }
+  } catch (error) {
+    console.error('Erreur lors de la récupération des emplacements à la date spécifiée', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des emplacements à la date spécifiée' });
+  }
+});
+
+// Route pour insérer une nouvelle emplacement
+app.post('/createCitizenLocation', async (req, res) => {
+  try {
+    const { user_id, latitude, longitude, latitudeDelta, longitudeDelta } = req.body;
+
+    // Utilisation du client du microservice CRUD pour insérer une nouvelle emplacement
+    const result = await crudServiceClient.createCitizenLocation(user_id, latitude, longitude, latitudeDelta, longitudeDelta);
+
+    res.status(200).json({ message: 'Emplacement insérée avec succès', locationidentifier: result.locationidentifier });
+  } catch (error) {
+    console.error('Erreur lors de l\'insertion de l\'emplacement', error);
+    res.status(500).json({ error: 'Erreur lors de l\'insertion de l\'emplacement' });
+  }
+});
+
+// Route pour mettre à jour une emplacement
+app.put('/updateCitizenLocation/:user_id', async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const { latitude, longitude, latitudeDelta, longitudeDelta } = req.body;
+
+    // Utilisation du client du microservice CRUD pour mettre à jour une emplacement
+    await crudServiceClient.updateCitizenLocation(user_id, latitude, longitude, latitudeDelta, longitudeDelta);
+
+    res.status(200).json({ message: 'Emplacement mis à jour avec succès' });
+  } catch (error) {
+    console.error('Erreur lors de la mise à jour de l\'emplacement', error);
+    res.status(500).json({ error: 'Erreur lors de la mise à jour de l\'emplacement' });
+  }
+});
+
+// Route pour supprimer une emplacement
+app.delete('/deleteCitizenLocation/:user_id', async (req, res) => {
+  try {
+    const { user_id } = req.params;
+
+    // Utilisation du client du microservice CRUD pour supprimer une emplacement
+    await crudServiceClient.deleteCitizenLocation(user_id);
+
+    res.status(200).json({ message: 'Emplacement supprimée avec succès' });
+  } catch (error) {
+    console.error('Erreur lors de la suppression de l\'emplacement', error);
+    res.status(500).json({ error: 'Erreur lors de la suppression de l\'emplacement' });
+  }
+});
+
+app.listen(port, () => {
   console.log(`Serveur Express en cours d'exécution sur le port ${port}`);
 });
