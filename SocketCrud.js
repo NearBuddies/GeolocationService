@@ -6,20 +6,19 @@ const server = http.createServer(app);
 const io = socketIo(server);
 const port = 3002;
 
-
 io.on('connection',(socket)=>{
     console.log('We have a client');
-    //Posting a location 
-    socket.on('/postcitizenlocation', (data) => {
-        axios.post('/postcitizenlocation', data).then(
+    // Posting a location 
+    socket.on('postcitizenlocation', (data) => {
+        axios.post(`postcitizenlocation`, data).then(
             (response)=>{
-                io.emit('newLocation',response);
+                io.emit('postcitizenlocation',response);
             }
         ).catch((error)=>{console.log(error);})          
     });
-    //Getting a location
-    socket.on('/getlatestcitizenlocation', (data) => {
-        axios.post('/getlatestcitizenlocation', data).then(
+    // Getting a location
+    socket.on('getlatestcitizenlocation', (data) => {
+        axios.post(`getlatestcitizenlocation/${data.user_id}`).then(
             (response)=>{
                 socket.emit('getlatestcitizenlocation', response);
             }
