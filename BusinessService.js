@@ -7,7 +7,7 @@ const cors = require('cors');
 app.use(cors());
 
 // Import des clients des microservices CRUD
-const crudServiceClient = require('./crudServiceClient'); // Remplacez par l'emplacement de votre client CRUD
+const crudServiceClient = require('./CrudService.js'); // Remplacez par l'emplacement de votre client CRUD
 
 // Route pour obtenir la dernière emplacement du jour pour un utilisateur spécifique
 app.get('/getLatestCitizenLocation/:user_id', async (req, res) => {

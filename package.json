@@ -6,7 +6,9 @@
   "scripts": {
     "start:crud": "node CrudService.js",
     "start:business": "node BusinessService.js",
-    "up": "node BusinessService.js &"
+    "start:socket": "node SocketCrud.js",
+    "business-up": "node BusinessService.js &",
+    "socket-up": "node CrudService.js & node SocketCrud.js"
   },
   "keywords": [],
   "author": "",
