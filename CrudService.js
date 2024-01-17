@@ -17,38 +17,38 @@ const db = pgp(dbConfig);
 app.use(express.json());
 app.use(cors());
 
-app.post('/postcitizenlocation', async (req, res) => {
+app.post('/postentitylocation', async (req, res) => {
   try {
-    const { user_id, latitude, longitude, latitudeDelta, longitudeDelta } = req.body;
+    const { entity_id, latitude, longitude, latitudeDelta, longitudeDelta } = req.body;
 
     const insertQuery = `
-      INSERT INTO LocationAtTime (user_id, location, latitudeDelta, longitudeDelta)
+      INSERT INTO LocationAtTime (entity_id, location, latitudeDelta, longitudeDelta)
       VALUES ($1, ST_MakePoint($2, $3), $4, $5)
       RETURNING locationidentifier;
     `;
-    const result = await db.one(insertQuery, [user_id, latitude, longitude, latitudeDelta, longitudeDelta]);
+    const result = await db.one(insertQuery, [entity_id, latitude, longitude, latitudeDelta, longitudeDelta]);
 
     res.status(200).json({ message: 'Données insérées avec succès', locationidentifier: result.locationidentifier });
   } catch (error) {
-    console.error('Erreur lors de l\'insertion de la personne', error);
-    res.status(500).json({ error: 'Erreur lors de l\'insertion de la personne' });
+    console.error('Erreur lors de l\'insertion de l entité', error);
+    res.status(500).json({ error: 'Erreur lors de l\'insertion de l entité' });
   }
 });
 
 // Route pour obtenir la dernière emplacement du jour pour un utilisateur spécifique
-app.get('/getlatestcitizenlocation/:user_id', async (req, res) => {
+app.get('/getlatestentitylocation/:entity_id', async (req, res) => {
   try {
-    const { user_id } = req.params;
+    const { entity_id } = req.params;
 
     const selectQuery = `
-      SELECT user_id, ST_X(location) as latitude, ST_Y(location) as longitude, latitudeDelta, longitudeDelta, date, time
+      SELECT entity_id, ST_X(location) as latitude, ST_Y(location) as longitude, latitudeDelta, longitudeDelta, date, time
       FROM LocationAtTime
-      WHERE user_id = $1
+      WHERE entity_id = $1
       AND date = current_date
       ORDER BY date DESC, time DESC
       LIMIT 1
     `;
-    const data = await db.oneOrNone(selectQuery, [user_id]);
+    const data = await db.oneOrNone(selectQuery, [entity_id]);
 
     if (data) {
       res.status(200).json(data);
@@ -62,20 +62,20 @@ app.get('/getlatestcitizenlocation/:user_id', async (req, res) => {
 });
 
 // Route pour obtenir toutes les emplacements d'un utilisateur à une date spécifique
-app.get('/getallcitizenlocations/:user_id/:date', async (req, res) => {
+app.get('/getallentitylocations/:entity_id/:date', async (req, res) => {
   try {
-    const { user_id, date } = req.params;
+    const { entity_id, date } = req.params;
 
     // Convertir la date au format "jourmoisannee" en date PostgreSQL
     const formattedDate = `${date.substring(4, 8)}-${date.substring(2, 4)}-${date.substring(0, 2)}`;
 
     const selectQuery = `
-      SELECT user_id, ST_X(location) as latitude, ST_Y(location) as longitude, latitudeDelta, longitudeDelta, date, time
+      SELECT entity_id, ST_X(location) as latitude, ST_Y(location) as longitude, latitudeDelta, longitudeDelta, date, time
       FROM LocationAtTime
-      WHERE user_id = $1
+      WHERE entity_id = $1
       AND date = $2
     `;
-    const data = await db.manyOrNone(selectQuery, [user_id, formattedDate]);
+    const data = await db.manyOrNone(selectQuery, [entity_id, formattedDate]);
 
     if (data.length > 0) {
       res.status(200).json(data);
@@ -91,36 +91,36 @@ app.get('/getallcitizenlocations/:user_id/:date', async (req, res) => {
 //Cette fonction n'est pas sensée intervenir, on ne met pas à jour une location, on rajoute
 //Cette fonction met pas à jour toutes les locations de la journée en une seule location
 //Je la laisse avant de mieux réfléchir, mais je la suprimerais probablement plus tard 
-app.put('/updatecitizenlocation/:user_id', async (req, res) => {
+app.put('/updateentitylocation/:entity_id', async (req, res) => {
   try {
-    const { user_id } = req.params;
+    const { entity_id } = req.params;
     const { latitude, longitude, latitudeDelta, longitudeDelta } = req.body;
 
     const updateQuery = `
       UPDATE LocationAtTime
       SET location = ST_MakePoint($2, $3), latitudeDelta = $4, longitudeDelta = $5
-      WHERE user_id = $1
+      WHERE entity_id = $1
     `;
-    await db.none(updateQuery, [user_id, latitude, longitude, latitudeDelta, longitudeDelta]);
+    await db.none(updateQuery, [entity_id, latitude, longitude, latitudeDelta, longitudeDelta]);
 
     res.status(200).json({ message: 'Données mises à jour avec succès' });
   } catch (error) {
-    console.error('Erreur lors de la mise à jour de la personne', error);
-    res.status(500).json({ error: 'Erreur lors de la mise à jour de la personne' });
+    console.error('Erreur lors de la mise à jour de l entité', error);
+    res.status(500).json({ error: 'Erreur lors de la mise à jour de l entité' });
   }
 });
 
 //Supprime toute les locations de quelqu'un, un trigger peut se déclencher 
 //chaque deux jours sur les locations vieilles de trois jours et les supprimer
-app.delete('/deletecitizenlocation/:user_id', async (req, res) => {
+app.delete('/deleteentitylocation/:entity_id', async (req, res) => {
   try {
-    const { user_id } = req.params;
+    const { entity_id } = req.params;
 
     const deleteQuery = `
       DELETE FROM LocationAtTime
-      WHERE user_id = $1
+      WHERE entity_id = $1
     `;
-    await db.none(deleteQuery, [user_id]);
+    await db.none(deleteQuery, [entity_id]);
 
     res.status(200).json({ message: 'Données supprimées avec succès' });
   } catch (error) {

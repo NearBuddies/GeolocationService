@@ -10,12 +10,12 @@ app.use(cors());
 const crudServiceClient = require('./CrudService.js'); // Remplacez par l'emplacement de votre client CRUD
 
 // Route pour obtenir la dernière emplacement du jour pour un utilisateur spécifique
-app.get('/getLatestCitizenLocation/:user_id', async (req, res) => {
+app.get('/getLatestEntityLocation/:entity_id', async (req, res) => {
   try {
-    const { user_id } = req.params;
+    const { entity_id } = req.params;
 
     // Utilisation du client du microservice CRUD pour obtenir la dernière emplacement
-    const latestLocation = await crudServiceClient.getLatestCitizenLocation(user_id);
+    const latestLocation = await crudServiceClient.getLatestEntityLocation(entity_id);
 
     if (latestLocation) {
       res.status(200).json(latestLocation);
@@ -29,12 +29,12 @@ app.get('/getLatestCitizenLocation/:user_id', async (req, res) => {
 });
 
 // Route pour obtenir toutes les emplacements d'un utilisateur à une date spécifique
-app.get('/getAllCitizenLocations/:user_id/:date', async (req, res) => {
+app.get('/getAllEntityLocations/:entity_id/:date', async (req, res) => {
   try {
-    const { user_id, date } = req.params;
+    const { entity_id, date } = req.params;
 
     // Utilisation du client du microservice CRUD pour obtenir toutes les emplacements
-    const allLocations = await crudServiceClient.getAllCitizenLocations(user_id, date);
+    const allLocations = await crudServiceClient.getAllEntityLocations(entity_id, date);
 
     if (allLocations.length > 0) {
       res.status(200).json(allLocations);
@@ -48,12 +48,12 @@ app.get('/getAllCitizenLocations/:user_id/:date', async (req, res) => {
 });
 
 // Route pour insérer une nouvelle emplacement
-app.post('/createCitizenLocation', async (req, res) => {
+app.post('/createEntityLocation', async (req, res) => {
   try {
-    const { user_id, latitude, longitude, latitudeDelta, longitudeDelta } = req.body;
+    const { entity_id, latitude, longitude, latitudeDelta, longitudeDelta } = req.body;
 
     // Utilisation du client du microservice CRUD pour insérer une nouvelle emplacement
-    const result = await crudServiceClient.createCitizenLocation(user_id, latitude, longitude, latitudeDelta, longitudeDelta);
+    const result = await crudServiceClient.createEntityLocation(entity_id, latitude, longitude, latitudeDelta, longitudeDelta);
 
     res.status(200).json({ message: 'Emplacement insérée avec succès', locationidentifier: result.locationidentifier });
   } catch (error) {
@@ -63,13 +63,13 @@ app.post('/createCitizenLocation', async (req, res) => {
 });
 
 // Route pour mettre à jour une emplacement
-app.put('/updateCitizenLocation/:user_id', async (req, res) => {
+app.put('/updateEntityLocation/:entity_id', async (req, res) => {
   try {
-    const { user_id } = req.params;
+    const { entity_id } = req.params;
     const { latitude, longitude, latitudeDelta, longitudeDelta } = req.body;
 
     // Utilisation du client du microservice CRUD pour mettre à jour une emplacement
-    await crudServiceClient.updateCitizenLocation(user_id, latitude, longitude, latitudeDelta, longitudeDelta);
+    await crudServiceClient.updateEntityLocation(entity_id, latitude, longitude, latitudeDelta, longitudeDelta);
 
     res.status(200).json({ message: 'Emplacement mis à jour avec succès' });
   } catch (error) {
@@ -79,12 +79,12 @@ app.put('/updateCitizenLocation/:user_id', async (req, res) => {
 });
 
 // Route pour supprimer une emplacement
-app.delete('/deleteCitizenLocation/:user_id', async (req, res) => {
+app.delete('/deleteEntityLocation/:entity_id', async (req, res) => {
   try {
-    const { user_id } = req.params;
+    const { entity_id } = req.params;
 
     // Utilisation du client du microservice CRUD pour supprimer une emplacement
-    await crudServiceClient.deleteCitizenLocation(user_id);
+    await crudServiceClient.deleteEntityLocation(entity_id);
 
     res.status(200).json({ message: 'Emplacement supprimée avec succès' });
   } catch (error) {

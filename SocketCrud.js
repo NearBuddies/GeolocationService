@@ -9,18 +9,18 @@ const port = 3002;
 io.on('connection',(socket)=>{
     console.log('We have a client');
     // Posting a location 
-    socket.on('postcitizenlocation', (data) => {
-        axios.post(`postcitizenlocation`, data).then(
+    socket.on('postentitylocation', (data) => {
+        axios.post(`postentitylocation`, data).then(
             (response)=>{
-                io.emit('postcitizenlocation',response);
+                io.emit('postentitylocation',response);
             }
         ).catch((error)=>{console.log(error);})          
     });
     // Getting a location
-    socket.on('getlatestcitizenlocation', (data) => {
-        axios.post(`getlatestcitizenlocation/${data.user_id}`).then(
+    socket.on('getlatestentitylocation', (data) => {
+        axios.post(`getlatestentitylocation/${data.entity_id}`).then(
             (response)=>{
-                socket.emit('getlatestcitizenlocation', response);
+                socket.emit('getlatestentitylocation', response);
             }
         ).catch((error)=>{console.log(error);})          
     });
