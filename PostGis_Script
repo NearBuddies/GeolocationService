@@ -2,7 +2,8 @@
 --
 CREATE TABLE LocationAtTime (
     locationidentifier serial PRIMARY KEY,
-    user_id int,
+    entity_id varchar,
+    entity_type varchar,
     location GEOMETRY(Point, 4326),
     latitudeDelta double precision,
     longitudeDelta double precision,
@@ -10,9 +11,9 @@ CREATE TABLE LocationAtTime (
     time time DEFAULT current_time
 );
 
---Creation d'un index sur "user_id" car il sert pour la recherche
+--Creation d'un index sur "entity_id" car il sert pour la recherche
 --
-CREATE INDEX idx_user_id ON LocationAtTime(user_id);
+CREATE INDEX idx_entity ON LocationAtTime(entity_id);
 
 
 --Creation d'une fonction afin de remplir l'identidiant de la location
