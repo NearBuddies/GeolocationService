@@ -110,7 +110,7 @@ app.put('/updateentitylocation/:entity_id', async (req, res) => {
   }
 });
 
-//Supprime toute les locations de quelqu'un, un trigger peut se déclencher 
+//Pour supprimer toute les locations de quelqu'un, un trigger peut se déclencher 
 //chaque deux jours sur les locations vieilles de trois jours et les supprimer
 app.delete('/deleteentitylocation/:entity_id', async (req, res) => {
   try {
