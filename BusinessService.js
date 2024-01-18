@@ -1,6 +1,8 @@
-const express = require('express');
+// Ce code ne fonctionne pas, je dois le corriger, utilisez directement le crud
+
+const express = require('express')
 const app = express();
-const port = 3000;
+const port = 4000;
 const cors = require('cors');
 
 // Configuration CORS

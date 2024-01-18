@@ -5,7 +5,7 @@ const port = 3000;
 const cors = require('cors');
 
 const dbConfig = {
-  host: '127.0.0.1',
+  host: 'localhost',
   port: 5432,
   database: 'nearbuddies_spatial_db',
   user: 'postgres',
