@@ -4,16 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start:crud": "node CrudService.js",
-    "start:business": "node BusinessService.js",
-    "start:socket": "node SocketCrud.js",
-    "business-up": "node BusinessService.js &",
-    "socket-up": "node CrudService.js & node SocketCrud.js"
+    "crud": "node CrudService.js",
+    "business": "node BusinessService.js",
+    "up": "node CrudService.js & BusinessService.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.6.5",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "http": "^0.0.1-security",
