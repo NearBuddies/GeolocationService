@@ -19,14 +19,14 @@ app.use(cors());
 
 app.post('/postentitylocation', async (req, res) => {
   try {
-    const { entity_id, latitude, longitude, latitudeDelta, longitudeDelta } = req.body;
+    const { entity_id, entity_type, latitude, longitude, latitudeDelta, longitudeDelta } = req.body;
 
     const insertQuery = `
-      INSERT INTO LocationAtTime (entity_id, location, latitudeDelta, longitudeDelta)
-      VALUES ($1, ST_MakePoint($2, $3), $4, $5)
+      INSERT INTO LocationAtTime (entity_id, entity_type, location, latitudeDelta, longitudeDelta)
+      VALUES ($1,$2, ST_MakePoint($3, $4), $5, $6)
       RETURNING locationidentifier;
     `;
-    const result = await db.one(insertQuery, [entity_id, latitude, longitude, latitudeDelta, longitudeDelta]);
+    const result = await db.one(insertQuery, [entity_id, entity_type, latitude, longitude, latitudeDelta, longitudeDelta]);
 
     res.status(200).json({ message: 'Données insérées avec succès', locationidentifier: result.locationidentifier });
   } catch (error) {
@@ -41,7 +41,7 @@ app.get('/getlatestentitylocation/:entity_id', async (req, res) => {
     const { entity_id } = req.params;
 
     const selectQuery = `
-      SELECT entity_id, ST_X(location) as latitude, ST_Y(location) as longitude, latitudeDelta, longitudeDelta, date, time
+      SELECT entity_id, entity_type,ST_X(location) as latitude, ST_Y(location) as longitude, latitudeDelta, longitudeDelta, date, time
       FROM LocationAtTime
       WHERE entity_id = $1
       AND date = current_date
@@ -60,6 +60,35 @@ app.get('/getlatestentitylocation/:entity_id', async (req, res) => {
     res.status(500).json({ error: 'Erreur lors de la récupération de la dernière emplacement' });
   }
 });
+
+// Route pour obtenir les 5 communautés les plus proches d'un utilisateur
+
+app.get('/getnearestcommunities/:entity_id/:latitude/:longitude', async (req, res) => {
+  try {
+    const { entity_id, latitude, longitude } = req.params;
+
+    const selectQuery = `
+      SELECT entity_id, ST_X(location) as latitude, ST_Y(location) as longitude, latitudeDelta, longitudeDelta, date, time
+      FROM LocationAtTime
+      WHERE entity_type = 'community'
+      AND entity_id != $1
+      ORDER BY ST_Distance(location, ST_SetSRID(ST_MakePoint($2, $3), 4326))
+      LIMIT 5
+    `;
+    const data = await db.manyOrNone(selectQuery, [entity_id, latitude, longitude]);
+
+    if (data.length > 0) {
+      res.status(200).json(data);
+    } else {
+      res.status(404).json({ error: 'Aucune entité communautaire trouvée à proximité de cette entité' });
+    }
+  } catch (error) {
+    console.error('Erreur lors de la récupération des entités les plus proches', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des entités les plus proches' });
+  }
+});
+
+
 
 // Route pour obtenir toutes les emplacements d'un utilisateur à une date spécifique
 app.get('/getallentitylocations/:entity_id/:date', async (req, res) => {

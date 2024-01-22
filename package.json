@@ -4,9 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "crud": "node CrudService.js",
-    "business": "node BusinessService.js",
-    "up": "node CrudService.js & BusinessService.js"
+    "start": "node CrudService.js"
   },
   "keywords": [],
   "author": "",
