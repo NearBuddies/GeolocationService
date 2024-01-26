@@ -88,6 +88,29 @@ app.get('/getnearestcommunities/:entity_id/:latitude/:longitude', async (req, re
   }
 });
 
+// Route pour obtenir la distance entre duex entités
+app.get('/getdistancetwoentities/:entity_id1/:entity_id2', async (req, res) => {
+  try {
+    const { entity_id1, entity_id2 } = req.params;
+
+    const distanceQuery = `
+      SELECT ST_Distance(entity1.location::geography, entity2.location::geography) as distance
+      FROM LocationAtTime as entity1, LocationAtTime as entity2
+      WHERE entity1.entity_id = $1 AND entity2.entity_id = $2;
+    `;
+    const result = await db.oneOrNone(distanceQuery, [entity_id1, entity_id2]);
+
+    if (result) {
+      res.status(200).json({ distance: result.distance });
+    } else {
+      res.status(404).json({ error: 'Les entités spécifiées n\'existent pas' });
+    }
+  } catch (error) {
+    console.error('Erreur lors du calcul de la distance entre les entités', error);
+    res.status(500).json({ error: 'Erreur lors du calcul de la distance entre les entités' });
+  }
+});
+
 
 
 // Route pour obtenir toutes les emplacements d'un utilisateur à une date spécifique
