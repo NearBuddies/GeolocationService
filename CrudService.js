@@ -35,7 +35,7 @@ app.post('/postentitylocation', async (req, res) => {
   }
 });
 
-// Route pour obtenir la dernière emplacement du jour pour un utilisateur spécifique
+// Route pour obtenir la dernière emplacement d'une entité
 app.get('/getlatestentitylocation/:entity_id', async (req, res) => {
   try {
     const { entity_id } = req.params;
@@ -44,7 +44,6 @@ app.get('/getlatestentitylocation/:entity_id', async (req, res) => {
       SELECT entity_id, entity_type,ST_X(location) as latitude, ST_Y(location) as longitude, latitudeDelta, longitudeDelta, date, time
       FROM LocationAtTime
       WHERE entity_id = $1
-      AND date = current_date
       ORDER BY date DESC, time DESC
       LIMIT 1
     `;
